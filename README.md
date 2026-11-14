@@ -19,4 +19,4 @@
 
 ## Resources
 
-🎥 [Video Tutorial on YouTube](https://www.raylib.com/examples.html)
+🎥 [Raylib examples](https://www.raylib.com/examples.html)
