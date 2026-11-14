@@ -12,6 +12,7 @@
 **2.** In the Explorer panel, navigate to the `src/` folder and open `main.cpp`.
 
 **3.** Press `F5` to compile and run.
+**NOTE.** Make sure that raylib is installed on your system otherwise installed it from officials.
 
 ---
 

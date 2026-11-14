@@ -13,7 +13,7 @@ class Game{
     static bool over;
     public:
     void game_over(int screen_width, int screen_height){
-        if(over) DrawText("Game Over ", screen_width / 2 - 100, screen_height / 2 - 25, 50, RED);
+        if(over) DrawText("Game Over Press R to restart ", screen_width / 2 - 400, screen_height / 2 - 25, 50, RED);
         if(IsKeyPressed(KEY_R) && over) over = false;
     }
     void start(int screen_width, int screen_height){
