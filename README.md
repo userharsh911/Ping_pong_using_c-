@@ -13,6 +13,15 @@
 
 **3.** Press `F5` to compile and run.
 **NOTE.** Make sure that raylib is installed on your system otherwise installed it from officials.
+## How to play
+
+**=>** For player red use W/S keys for up and down.
+
+**=>** For player blue use arrow_up/arrow_down keys for up and down.
+
+**=>** Press Enter for Start the game and R for restart the game.
+
+**=>** Enjoy 😀.
 
 ---
 
