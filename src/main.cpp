@@ -16,7 +16,7 @@ class Game{
         if(IsKeyPressed(KEY_R) && over) over = false;
     }
     void start(int screen_width, int screen_height){
-        if(!run) DrawText("Press Enter to Start ", screen_width / 2 - 200, screen_height / 2 - 25, 50, GREEN);
+        if(!run) DrawText("Press Enter to Start ", screen_width / 2 - 270, screen_height / 2 - 25, 50, GREEN);
         if(IsKeyPressed(KEY_ENTER) && !run) run = true;
     }
     void increment_score(){score++;}
@@ -33,11 +33,11 @@ class Player : public Game{
         Player(int l, int b) : l(l), b(b){}
         void draw(){DrawRectangle(x, y, b, l, color);}
         Vector2 get_coordinates(){
-            Vector2 v = {x, y};
+            Vector2 v = {static_cast<float>(x), static_cast<float>(y)};
             return v;
         }
         Vector2 get_dimensions(){
-            Vector2 v = {b,l};
+            Vector2 v = {static_cast<float>(b), static_cast<float>(l)};
             return v;
         }
         void print_score(int screen_width, int screen_height){
@@ -79,7 +79,7 @@ class Ball : public Game{
         int speed_y;
         Color color;
     public:
-        Ball(int radius, int speed_x, int speed_y, Color color, int screen_width) : radius(radius), x(x = screen_width / 2 - radius), y(radius + 1), speed_x(speed_x), speed_y(speed_y), color(color){}
+        Ball(int radius, int speed_x, int speed_y, Color color, int screen_width) : radius(radius), x(screen_width / 2 - radius), y(radius + 1), speed_x(speed_x), speed_y(speed_y), color(color){}
         void coordinates(int x, int screen_w){
             if(x < radius){
                 x = radius;
@@ -148,7 +148,7 @@ int main() {
     const int screen_height = 720;
 
     Game g;
-    Ball ball_1(20, 8, 8, RAYWHITE, screen_width);
+    Ball ball_1(20, 8, 7, RAYWHITE, screen_width);
     Player_left player_left(100,20,screen_height);
     Player_right player_right(100,20,screen_width,screen_height);
 
@@ -158,7 +158,7 @@ int main() {
 
     Music hit = LoadMusicStream("./src/hit.mp3");
     Music game_over = LoadMusicStream("./src/game_over.mp3");
-    
+
     float pan = 0.0f;
     SetMusicPan(game_over, pan);
     SetMusicPan(hit, pan);
@@ -173,10 +173,9 @@ int main() {
 
         UpdateMusicStream(game_over);
         UpdateMusicStream(hit);
+
         if (GetMusicTimePlayed(hit) >= 0.1f) StopMusicStream(hit);
         if (GetMusicTimePlayed(game_over) >= 3.0f || IsKeyDown(KEY_R)) StopMusicStream(game_over);
-        // cout<<"Audio "<<GetMusicTimePlayed(hit)<<" "<<GetMusicTimeLength(hit)<<endl;
-        cout<<"Game over "<<GetMusicTimePlayed(game_over)<<" "<<GetMusicTimeLength(game_over)<<endl;
 
         g.start(screen_width, screen_height);
         ball_1.update();
