@@ -11,12 +11,12 @@ class Game{
     static bool run;
     static bool over;
     public:
-    void game_over(int screen_width, int screen_height, Sound &game_over, Music & background_music){
-        if(over) DrawText("Game Over Press R to restart ", screen_width / 2 - 400, screen_height / 2 - 25, 50, RED);
+    void game_over(Sound &game_over, Music & background_music){
+        if(over) DrawText("Game Over Press R to restart ", GetScreenWidth() / 2 - 400, GetScreenHeight() / 2 - 25, 50, RED);
         if(IsKeyPressed(KEY_R) && over) over = false, StopSound(game_over), PlayMusicStream(background_music);
     }
-    void start(int screen_width, int screen_height){
-        if(!run) DrawText("Press Enter to Start ", screen_width / 2 - 270, screen_height / 2 - 25, 50, GREEN);
+    void start(){
+        if(!run) DrawText("Press Enter to Start ", GetScreenWidth() / 2 - 270, GetScreenHeight() / 2 - 25, 50, GREEN);
         if(IsKeyPressed(KEY_ENTER) && !run) run = true;
     }
     void increment_score(){score++;}
@@ -47,18 +47,18 @@ class Player : public Game{
 };
 class Player_left : public Player{
     public:
-        Player_left(int l, int b, int screen_height) : Player(l, b){x = 0, y = (screen_height / 2) - (l / 2), speed = 10, color = RED;}
-        void movement(int screen_height){
+        Player_left(int l, int b) : Player(l, b){x = 0, y = (GetScreenHeight() / 2) - (l / 2), speed = 10, color = RED;}
+        void movement(){
             if(run && !over && IsKeyDown(KEY_W) && y > 0){y -= speed;}
-            if(run && !over && IsKeyDown(KEY_S) && y < screen_height - l){y += speed;}
+            if(run && !over && IsKeyDown(KEY_S) && y < GetScreenHeight() - l){y += speed;}
         }
 };
 class Player_right : public Player{
     public:
-        Player_right(int l, int b, int screen_width, int screen_height) : Player(l, b){x = screen_width - b, y = (screen_height / 2) - (l / 2), speed = 10, color = BLUE;}
-        void movement(int screen_height){
+        Player_right(int l, int b) : Player(l, b){x = GetScreenWidth() - b, y = (GetScreenHeight() / 2) - (l / 2), speed = 10, color = BLUE;}
+        void movement(){
             if(run && !over && IsKeyDown(KEY_UP) && y > 0){y -= speed;}
-            if(run && !over && IsKeyDown(KEY_DOWN) && y < screen_height - l){y += speed;}
+            if(run && !over && IsKeyDown(KEY_DOWN) && y < GetScreenHeight() - l){y += speed;}
         }
 };
 
@@ -79,19 +79,7 @@ class Ball : public Game{
         int speed_y;
         Color color;
     public:
-        Ball(int radius, int speed_x, int speed_y, Color color, int screen_width) : radius(radius), x(screen_width / 2 - radius), y(radius + 1), speed_x(speed_x), speed_y(speed_y), color(color){}
-        void coordinates(int x, int screen_w){
-            if(x < radius){
-                x = radius;
-                return;
-            }
-            if(x >= screen_w - radius * 2){
-                this->x = screen_w - radius * 2;
-                speed_x *= -1;
-                return;
-            }
-            this->x = x;
-        }
+        Ball(int radius, int speed_x, int speed_y, Color color) : radius(radius), x(GetScreenWidth() / 2 - radius), y(radius + 1), speed_x(speed_x), speed_y(speed_y), color(color){}
         void update(){
             if(run && !over){
                 y += speed_y;
@@ -99,24 +87,19 @@ class Ball : public Game{
             }
         }
         void draw(){if(run && !over) DrawCircle(x, y, radius, color);}
-        void bounce(int screen_width, int screen_height, Sound &game_over, Music & background_music){
-            if(x >= screen_width - radius || x <= radius){
+        void bounce(Sound &game_over, Music & background_music){
+            if(x >= GetScreenWidth() - radius || x <= radius){
                 cout<<"Game over: "<<endl;
-                x = (screen_width / 2) - (radius / 2);
-                y = (screen_height / 2) - (radius / 2);
+                x = (GetScreenWidth() / 2) - (radius / 2);
+                y = (GetScreenHeight() / 2) - (radius / 2);
                 over = true;
                 StopMusicStream(background_music);
                 PlaySound(game_over);
             }
-            if(y >= screen_height - radius || y <= radius) speed_y *= -1;
+            if(y >= GetScreenHeight() - radius || y <= radius) speed_y *= -1;
         }
-        void collision_right(Player_right &player, Sound &hit, int screen_w){
-            // if((this->x >= ball.x - this->radius && this->x <= ball.x + ball.radius && this->y >= ball.y - this->radius && this->y <= ball.y + ball.radius)){
-            //     this->speed_x *= -1;
-            //     ball.speed_x *= -1;
-            // }
-
-            if(x >= player.get_coordinates().x - radius && y >= player.get_coordinates().y - radius && y <= player.get_coordinates().y + player.get_dimensions().y && x < screen_w - radius){
+        void collision_right(Player_right &player, Sound &hit){
+            if(x >= player.get_coordinates().x - radius && y >= player.get_coordinates().y - radius && y <= player.get_coordinates().y + player.get_dimensions().y && x < GetScreenWidth() - radius){
                 cout<<"collsion right :"<<endl;
                 speed_x = abs(speed_x) * -1;
                 player.increment_score();
@@ -124,11 +107,6 @@ class Ball : public Game{
             }
         }
         void collision_left(Player_left &player, Sound &hit){
-            // if((this->x >= ball.x - this->radius && this->x <= ball.x + ball.radius && this->y >= ball.y - this->radius && this->y <= ball.y + ball.radius)){
-            //     this->speed_x *= -1;
-            //     ball.speed_x *= -1;
-            // }
-
             if(x <= radius + player.get_dimensions().x && y >= player.get_coordinates().y - radius && y <= player.get_coordinates().y + player.get_dimensions().y && x > radius){
                 cout<<"collsion left :"<<endl;
                 speed_x = abs(speed_x);
@@ -147,19 +125,18 @@ int main() {
     cout<<"Starting the game...";
     const int screen_width = 1080;
     const int screen_height = 720;
+    InitWindow(screen_width, screen_height, "PING PONG");
 
     Game game;
-    Ball ball_1(20, 8, 7, RAYWHITE, screen_width);
-    Player_left player_left(100,20,screen_height);
-    Player_right player_right(100,20,screen_width,screen_height);
+    Ball ball_1(20, 8, 8, RAYWHITE);
+    Player_left player_left(100,20);
+    Player_right player_right(100,20);
 
-    InitWindow(screen_width, screen_height, "PING PONG");
     InitAudioDevice();
-    SetAudioStreamBufferSizeDefault(4096);
 
-    Sound hit = LoadSound("./src/hit.mp3");
-    Sound game_over = LoadSound("./src/game_over.mp3");
-    Music background_music = LoadMusicStream("./src/background_music.mp3");
+    Sound hit = LoadSound("./src/audio/hit.mp3");
+    Sound game_over = LoadSound("./src/audio/game_over.mp3");
+    Music background_music = LoadMusicStream("./src/audio/background_music.mp3");
 
     float pan = 0.0f;
     SetMusicPan(background_music, pan);
@@ -173,18 +150,17 @@ int main() {
         UpdateMusicStream(background_music);
 
         ball_1.update();
+        player_left.movement();
+        player_right.movement();
         
-        player_left.movement(screen_height);
-        player_right.movement(screen_height);
-        
-        ball_1.collision_right(player_right, hit, screen_width);
+        ball_1.collision_right(player_right, hit);
         ball_1.collision_left(player_left, hit);
-        ball_1.bounce(screen_width, screen_height, game_over, background_music);
+        ball_1.bounce(game_over, background_music);
         
         BeginDrawing();
         
-        game.start(screen_width, screen_height);
-        game.game_over(screen_width, screen_height, game_over, background_music);
+        game.start();
+        game.game_over(game_over, background_music);
         
         ClearBackground(BLACK);
 
