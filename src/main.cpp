@@ -1,49 +1,45 @@
 #include <raylib.h>
 #include "iostream"
 using namespace std;
+class Game{
+    protected:
+    static bool run;
+    static bool over;
+    static string winner;
+    public:
+    void game_over(Sound &game_over, Music &background_music){
+        if(over) DrawText(&winner[0], GetScreenWidth() / 2 - 400, GetScreenHeight() / 2 - 25, 50, RED);
+        if(IsKeyPressed(KEY_R) && over) over = false, StopSound(game_over), PlayMusicStream(background_music);
+    }
+    void start(){
+        if(!run) DrawText("Press Enter to Start ", GetScreenWidth() / 2 - 270, GetScreenHeight() / 2 - 25, 50, BLACK);
+        if(IsKeyPressed(KEY_ENTER) && !run) run = true;
+    }
+};
 // ----------------------------------------------------------------------------------------------
 /*
     PLAYER CLASS START 
 */
-class Game{
-    protected:
-    int score;
-    static bool run;
-    static bool over;
-    public:
-    void game_over(Sound &game_over, Music & background_music){
-        if(over) DrawText("Game Over Press R to restart ", GetScreenWidth() / 2 - 400, GetScreenHeight() / 2 - 25, 50, RED);
-        if(IsKeyPressed(KEY_R) && over) over = false, StopSound(game_over), PlayMusicStream(background_music);
-    }
-    void start(){
-        if(!run) DrawText("Press Enter to Start ", GetScreenWidth() / 2 - 270, GetScreenHeight() / 2 - 25, 50, GREEN);
-        if(IsKeyPressed(KEY_ENTER) && !run) run = true;
-    }
-    void increment_score(){score++;}
-};
+// ----------------------------------------------------------------------------------------------
 class Player : public Game{
     protected:
-        int l;
-        int b;
-        int x;
-        int y;
-        int speed;
-        Color color;
+    int l;
+    int b;
+    int x;
+    int y;
+    int speed;
+    Color color;
     public:
-        Player(int l, int b) : l(l), b(b){}
-        void draw(){DrawRectangle(x, y, b, l, color);}
-        Vector2 get_coordinates(){
-            Vector2 v = {static_cast<float>(x), static_cast<float>(y)};
-            return v;
-        }
-        Vector2 get_dimensions(){
-            Vector2 v = {static_cast<float>(b), static_cast<float>(l)};
-            return v;
-        }
-        void print_score(int screen_width, int screen_height){
-            string text = to_string(score);
-            if(!run) DrawText(&text[0], screen_width / 2 - 100, screen_height / 2 - 25, 50, RED);
-        }
+    Player(int l, int b) : l(l), b(b){}
+    void draw(){DrawRectangle(x, y, b, l, color);}
+    Vector2 get_coordinates(){
+        Vector2 v = {static_cast<float>(x), static_cast<float>(y)};
+        return v;
+    }
+    Vector2 get_dimensions(){
+        Vector2 v = {static_cast<float>(b), static_cast<float>(l)};
+        return v;
+    }
 };
 class Player_left : public Player{
     public:
@@ -61,7 +57,7 @@ class Player_right : public Player{
             if(run && !over && IsKeyDown(KEY_DOWN) && y < GetScreenHeight() - l){y += speed;}
         }
 };
-
+// ----------------------------------------------------------------------------------------------
 /*
     PLAYER CLASS END 
 */
@@ -89,10 +85,8 @@ class Ball : public Game{
         void draw(){if(run && !over) DrawCircle(x, y, radius, color);}
         void bounce(Sound &game_over, Music & background_music){
             if(x >= GetScreenWidth() - radius || x <= radius){
-                cout<<"Game over: "<<endl;
                 x = (GetScreenWidth() / 2) - (radius / 2);
-                y = (GetScreenHeight() / 2) - (radius / 2);
-                over = true;
+                    over = true;
                 StopMusicStream(background_music);
                 PlaySound(game_over);
             }
@@ -100,18 +94,16 @@ class Ball : public Game{
         }
         void collision_right(Player_right &player, Sound &hit){
             if(x >= player.get_coordinates().x - radius && y >= player.get_coordinates().y - radius && y <= player.get_coordinates().y + player.get_dimensions().y && x < GetScreenWidth() - radius){
-                cout<<"collsion right :"<<endl;
                 speed_x = abs(speed_x) * -1;
-                player.increment_score();
                 PlaySound(hit);
+                winner = "BLUE wins Press R to restart";
             }
         }
         void collision_left(Player_left &player, Sound &hit){
             if(x <= radius + player.get_dimensions().x && y >= player.get_coordinates().y - radius && y <= player.get_coordinates().y + player.get_dimensions().y && x > radius){
-                cout<<"collsion left :"<<endl;
                 speed_x = abs(speed_x);
-                player.increment_score();
                 PlaySound(hit);
+                winner = "RED wins Press R to restart";
             }
         }
 };
@@ -121,6 +113,7 @@ class Ball : public Game{
 
 bool Game::run = false;
 bool Game::over = false;
+string Game::winner = "RED wins Press R to restart";
 int main() {
     cout<<"Starting the game...";
     const int screen_width = 1080;
@@ -128,7 +121,7 @@ int main() {
     InitWindow(screen_width, screen_height, "PING PONG");
 
     Game game;
-    Ball ball_1(20, 8, 8, RAYWHITE);
+    Ball ball_1(20, 8, 8, DARKGREEN);
     Player_left player_left(100,20);
     Player_right player_right(100,20);
 
@@ -152,17 +145,18 @@ int main() {
         ball_1.update();
         player_left.movement();
         player_right.movement();
-        
+
+
         ball_1.collision_right(player_right, hit);
         ball_1.collision_left(player_left, hit);
         ball_1.bounce(game_over, background_music);
         
         BeginDrawing();
-        
+
         game.start();
         game.game_over(game_over, background_music);
         
-        ClearBackground(BLACK);
+        ClearBackground(BEIGE);
 
         ball_1.draw();
         player_right.draw();
